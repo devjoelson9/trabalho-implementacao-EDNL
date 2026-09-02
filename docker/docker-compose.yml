@@ -1,0 +1,11 @@
+services:
+  cpp:
+    build: .
+    image: ednl-cpp
+    container_name: ednl-cpp
+    working_dir: /workspace
+    volumes:
+      - ..:/workspace
+    tty: true
+    stdin_open: true
+    command: /bin/bash

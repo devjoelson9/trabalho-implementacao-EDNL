@@ -1,0 +1,16 @@
+# Binários compilados no container (Linux, sem extensão)
+main
+teste
+programa*
+!*.cpp
+
+# Builds auxiliares
+*.o
+*.out
+build/
+cmake-build-*/
+
+# Visual Studio Code
+.vscode/
+
+*aula-01
