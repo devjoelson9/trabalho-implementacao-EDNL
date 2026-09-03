@@ -10,5 +10,9 @@ class NoFila{
     public:
         NoFila(Chamado chamado);
         ~NoFila();
-};
+
+        Chamado getChamadoRef() const;
+        NoFila* getProximo() const;
+        void setProximo(NoFila* proximo);
+    };
 #endif

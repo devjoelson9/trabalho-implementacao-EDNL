@@ -10,7 +10,16 @@ class NoBST{
         NoBST* direito;
         NoBST* pai;
     public:
-        NoBST(Chamado Chamado);
+        NoBST(Chamado chamado);
         ~NoBST();
+
+        Chamado getChamado() const;
+        NoBST* getEsquerdo() const;
+        NoBST* getDireito() const;
+        NoBST* getPai() const;
+        void setEsquerdo(NoBST* esquerdo);
+        void setDireito(NoBST* direito);
+        void setPai(NoBST* pai);
+        void setChamado(const Chamado& chamado);
     };
 #endif

@@ -40,5 +40,12 @@ class Chamado {
         ~Chamado();
 
         void atualizarStatus(const Status& novoStatus, const std::string& observacao);
+
+        int getId() const;
+        std::string getSolicitante() const;
+        std::string getDescricao() const;
+        Categoria getCategoria() const;
+        Prioridade getPrioridade() const;
+        Status getStatus() const;
     };
 #endif
