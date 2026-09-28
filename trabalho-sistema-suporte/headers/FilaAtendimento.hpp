@@ -13,11 +13,13 @@ class FilaAtendimento{
         FilaAtendimento();
         ~FilaAtendimento();
 
-        void enfileirar(Chamado chamado);
-        Chamado desenfileirar();
-        Chamado espiarFrente();
+        void enfileirar(Chamado* chamado);
+        Chamado* desenfileirar();
+        Chamado* espiarFrente();
         bool estaVazia();
         int getTamanho();
+        bool contemChamado(int id);
+        bool removerPorId(int id);
 };
 
 #endif

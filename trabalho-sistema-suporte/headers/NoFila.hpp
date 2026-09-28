@@ -5,13 +5,13 @@
 
 class NoFila{
     private:
-        Chamado chamadoRef;
+        Chamado* ponteiroChamado;
         NoFila* proximo;
     public:
-        NoFila(Chamado chamado);
+        NoFila(Chamado* chamado);
         ~NoFila();
 
-        Chamado getChamadoRef() const;
+        Chamado* getPonteiroChamado() const;
         NoFila* getProximo() const;
         void setProximo(NoFila* proximo);
     };

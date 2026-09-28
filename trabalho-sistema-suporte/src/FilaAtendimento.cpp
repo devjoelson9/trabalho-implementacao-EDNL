@@ -9,7 +9,7 @@ FilaAtendimento::~FilaAtendimento() {
     }
 }
 
-void FilaAtendimento::enfileirar(Chamado chamado) {
+void FilaAtendimento::enfileirar(Chamado* chamado) {
     NoFila* novo = new NoFila(chamado);
     if (estaVazia()) {
         frente = novo;
@@ -20,12 +20,12 @@ void FilaAtendimento::enfileirar(Chamado chamado) {
     tamanho++;
 }
 
-Chamado FilaAtendimento::desenfileirar() {
+Chamado* FilaAtendimento::desenfileirar() {
     if (estaVazia()) {
-        return Chamado(-1, "", "", Categoria::HARDWARE, Prioridade::BAIXA);
+        return nullptr;
     }
     NoFila* temp = frente;
-    Chamado chamado = temp->getChamadoRef();
+    Chamado* chamado = temp->getPonteiroChamado();
     frente = frente->getProximo();
     if (frente == nullptr) {
         tras = nullptr;
@@ -35,11 +35,11 @@ Chamado FilaAtendimento::desenfileirar() {
     return chamado;
 }
 
-Chamado FilaAtendimento::espiarFrente() {
+Chamado* FilaAtendimento::espiarFrente() {
     if (estaVazia()) {
-        return Chamado(-1, "", "", Categoria::HARDWARE, Prioridade::BAIXA);
+        return nullptr;
     }
-    return frente->getChamadoRef();
+    return frente->getPonteiroChamado();
 }
 
 bool FilaAtendimento::estaVazia() {
@@ -48,4 +48,43 @@ bool FilaAtendimento::estaVazia() {
 
 int FilaAtendimento::getTamanho() {
     return tamanho;
+}
+
+bool FilaAtendimento::contemChamado(int id) {
+    NoFila* atual = frente;
+    while (atual != nullptr) {
+        if (atual->getPonteiroChamado()->getId() == id) {
+            return true;
+        }
+        atual = atual->getProximo();
+    }
+    return false;
+}
+
+bool FilaAtendimento::removerPorId(int id) {
+    NoFila* anterior = nullptr;
+    NoFila* atual = frente;
+
+    while (atual != nullptr) {
+        if (atual->getPonteiroChamado()->getId() == id) {
+            if (anterior == nullptr) {
+                frente = atual->getProximo();
+            } else {
+                anterior->setProximo(atual->getProximo());
+            }
+
+            if (atual == tras) {
+                tras = anterior;
+            }
+
+            delete atual;
+            tamanho--;
+            return true;
+        }
+
+        anterior = atual;
+        atual = atual->getProximo();
+    }
+
+    return false;
 }

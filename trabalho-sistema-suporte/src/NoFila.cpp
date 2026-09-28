@@ -1,12 +1,12 @@
 #include "../headers/NoFila.hpp"
 
-NoFila::NoFila(Chamado chamado)
-    : chamadoRef(chamado), proximo(nullptr) {}
+NoFila::NoFila(Chamado* chamado)
+    : ponteiroChamado(chamado), proximo(nullptr) {}
 
 NoFila::~NoFila() {}
 
-Chamado NoFila::getChamadoRef() const {
-    return chamadoRef;
+Chamado* NoFila::getPonteiroChamado() const {
+    return ponteiroChamado;
 }
 
 NoFila* NoFila::getProximo() const {
