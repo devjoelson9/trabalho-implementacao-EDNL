@@ -15,6 +15,10 @@ void exibirMenu() {
     std::cout << "8. Consultar historico" << std::endl;
     std::cout << "9. Alterar status" << std::endl;
     std::cout << "10. Estatisticas" << std::endl;
+    std::cout << "11. Pre-ordem" << std::endl;
+    std::cout << "12. Pos-ordem" << std::endl;
+    std::cout << "13. Em largura" << std::endl;
+    std::cout << "14. Consultar frente da fila" << std::endl;
     std::cout << "0. Sair" << std::endl;
     std::cout << "\nEscolha: ";
 }
@@ -39,6 +43,10 @@ int main() {
             case 8: sistema.consultarHistorico(); break;
             case 9: sistema.alterarStatus(); break;
             case 10: sistema.exibirEstatisticas(); break;
+            case 11: sistema.preOrdem(); break;
+            case 12: sistema.posOrdem(); break;
+            case 13: sistema.emLargura(); break;
+            case 14: sistema.consultarFrenteFila(); break;
             case 0: std::cout << "Saindo..." << std::endl; break;
             default: std::cout << "Opcao invalida!" << std::endl;
         }

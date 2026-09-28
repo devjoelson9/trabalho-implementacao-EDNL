@@ -3,11 +3,14 @@
 
 #include "ArvoreBST.hpp"
 #include "FilaAtendimento.hpp"
+#include <string>
 
 class SistemaSuporte{
     private:
         ArvoreBST arvoreChamados;
         FilaAtendimento filaAtendimento;
+
+        int lerInteiro(const std::string& mensagem, int min, int max);
 
     public:
         SistemaSuporte();
@@ -23,6 +26,10 @@ class SistemaSuporte{
         void consultarHistorico();
         void alterarStatus();
         void exibirEstatisticas();
+        void preOrdem();
+        void posOrdem();
+        void emLargura();
+        void consultarFrenteFila();
 };
 
 #endif

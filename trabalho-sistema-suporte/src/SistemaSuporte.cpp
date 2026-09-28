@@ -1,18 +1,35 @@
 #include "../headers/SistemaSuporte.hpp"
 #include <iostream>
+#include <limits>
 
 SistemaSuporte::SistemaSuporte() {}
 
 SistemaSuporte::~SistemaSuporte() {}
 
+int SistemaSuporte::lerInteiro(const std::string& mensagem, int min, int max) {
+    int valor;
+    while (true) {
+        std::cout << mensagem;
+        if (std::cin >> valor) {
+            if (valor >= min && valor <= max) {
+                return valor;
+            }
+            std::cout << "Valor invalido! Digite um numero entre " << min << " e " << max << "." << std::endl;
+        } else {
+            std::cin.clear();
+            std::cout << "Entrada invalida! Digite um numero." << std::endl;
+        }
+        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+    }
+}
+
 void SistemaSuporte::abrirChamado() {
     int id;
     std::string solicitante, descricao;
-    int cat, pri;
 
-    std::cout << "ID do chamado: ";
-    std::cin >> id;
-    std::cin.ignore();
+    std::cout << "\n--- ABRIR CHAMADO ---\n";
+    id = lerInteiro("ID unico: ", 1, 1000000);
+    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 
     std::cout << "Solicitante: ";
     std::getline(std::cin, solicitante);
@@ -20,125 +37,162 @@ void SistemaSuporte::abrirChamado() {
     std::cout << "Descricao: ";
     std::getline(std::cin, descricao);
 
-    std::cout << "Categoria (1-HARDWARE, 2-SOFTWARE, 3-REDE, 4-SISTEMA, 5-CONTA_ACESSO): ";
-    std::cin >> cat;
+    int cat = lerInteiro("Categoria (1-Hardware, 2-Software, 3-Rede, 4-Sistema, 5-Conta/Acesso): ", 1, 5);
+    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 
-    std::cout << "Prioridade (1-BAIXA, 2-MEDIA, 3-ALTA, 4-CRITICA): ";
-    std::cin >> pri;
+    int pri = lerInteiro("Prioridade (1-BAIXA, 2-MEDIA, 3-ALTA, 4-CRITICA): ", 1, 4);
+    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 
     Categoria categoria = static_cast<Categoria>(cat - 1);
     Prioridade prioridade = static_cast<Prioridade>(pri - 1);
 
     Chamado chamado(id, solicitante, descricao, categoria, prioridade);
     if (arvoreChamados.inserir(chamado)) {
-        std::cout << "Chamado aberto com sucesso!" << std::endl;
+        std::cout << "\nChamado #" << id << " aberto com sucesso!" << std::endl;
     } else {
-        std::cout << "Erro: ID ja existe!" << std::endl;
+        std::cout << "\nErro: Ja existe um chamado com o ID " << id << "!" << std::endl;
     }
 }
 
 void SistemaSuporte::buscarChamado() {
     int id;
-    std::cout << "ID do chamado: ";
+    std::cout << "\nID do chamado para busca: ";
     std::cin >> id;
 
-    Chamado chamado = arvoreChamados.buscar(id);
-    if (chamado.getId() != -1) {
-        std::cout << "Chamado encontrado!" << std::endl;
-        std::cout << "Solicitante: " << chamado.getSolicitante() << std::endl;
-        std::cout << "Descricao: " << chamado.getDescricao() << std::endl;
+    Chamado* chamado = arvoreChamados.buscar(id);
+    if (chamado != nullptr) {
+        std::cout << "\n+---------------------------------------+\n";
+        std::cout << "  Chamado #" << chamado->getId() << "\n";
+        std::cout << "+---------------------------------------+\n";
+        std::cout << "  Solicitante : " << chamado->getSolicitante() << "\n";
+        std::cout << "  Descricao   : " << chamado->getDescricao() << "\n";
+        std::cout << "  Categoria   : " << Chamado::categoriaToString(chamado->getCategoria()) << "\n";
+        std::cout << "  Prioridade  : " << Chamado::prioridadeToString(chamado->getPrioridade()) << "\n";
+        std::cout << "  Status      : " << Chamado::statusToString(chamado->getStatus()) << "\n";
+        std::cout << "+---------------------------------------+\n";
     } else {
-        std::cout << "Chamado nao encontrado!" << std::endl;
+        std::cout << "\nChamado nao encontrado!" << std::endl;
     }
 }
 
 void SistemaSuporte::removerChamado() {
     int id;
-    std::cout << "ID do chamado: ";
+    std::cout << "\nID do chamado a remover: ";
     std::cin >> id;
 
-    if (arvoreChamados.remover(id)) {
-        std::cout << "Chamado removido com sucesso!" << std::endl;
-    } else {
-        std::cout << "Chamado nao encontrado!" << std::endl;
+    Chamado* ptr = arvoreChamados.buscar(id);
+    if (ptr == nullptr) {
+        std::cout << "\nChamado nao encontrado!" << std::endl;
+        return;
     }
+
+    bool estavaNaFila = filaAtendimento.removerPorId(id);
+
+    arvoreChamados.remover(id);
+
+    if (estavaNaFila) {
+        std::cout << "\nChamado #" << id << " tambem foi retirado da fila de atendimento." << std::endl;
+    }
+
+    std::cout << "\nChamado #" << id << " removido com sucesso!" << std::endl;
 }
 
 void SistemaSuporte::listarChamados() {
-    std::cout << "=== Chamados em Ordem ===" << std::endl;
+    std::cout << "\n=========================================\n";
+    std::cout << "       LISTA DE CHAMADOS (ORDEM)         \n";
+    std::cout << "=========================================\n";
     arvoreChamados.listarEmOrdem();
+    std::cout << "=========================================\n";
 }
 
 void SistemaSuporte::listarPorIntervalo() {
     int idInicio, idFim;
-    std::cout << "ID Inicio: ";
+    std::cout << "\nID Inicial: ";
     std::cin >> idInicio;
-    std::cout << "ID Fim: ";
+    std::cout << "ID Final: ";
     std::cin >> idFim;
 
-    std::cout << "=== Chamados no Intervalo ===" << std::endl;
+    std::cout << "\n=== CHAMADOS NO INTERVALO [" << idInicio << " a " << idFim << "] ===\n";
     arvoreChamados.listarPorIntervalo(idInicio, idFim);
 }
 
 void SistemaSuporte::encaminharParaAtendimento() {
     int id;
-    std::cout << "ID do chamado: ";
+    std::cout << "\nID do chamado para encaminhar: ";
     std::cin >> id;
 
-    Chamado chamado = arvoreChamados.buscar(id);
-    if (chamado.getId() != -1) {
-        filaAtendimento.enfileirar(chamado);
-        std::cout << "Chamado encaminhado para atendimento!" << std::endl;
-    } else {
-        std::cout << "Chamado nao encontrado!" << std::endl;
+    Chamado* ptr = arvoreChamados.buscar(id);
+    if (ptr == nullptr) {
+        std::cout << "\nChamado nao encontrado!" << std::endl;
+        return;
     }
+
+    if (ptr->getStatus() != Status::ABERTO) {
+        std::cout << "\nChamado #" << id << " nao pode ser encaminhado. Status atual: "
+                  << Chamado::statusToString(ptr->getStatus()) << std::endl;
+        std::cout << "Somente chamados com status ABERTO entram na fila de atendimento." << std::endl;
+        return;
+    }
+
+    if (filaAtendimento.contemChamado(id)) {
+        std::cout << "\nChamado #" << id << " ja esta na fila de atendimento!" << std::endl;
+        return;
+    }
+
+    filaAtendimento.enfileirar(ptr);
+    std::cout << "\nChamado #" << id << " encaminhado para a fila de atendimento!" << std::endl;
 }
 
 void SistemaSuporte::atenderProximo() {
     if (filaAtendimento.estaVazia()) {
-        std::cout << "Fila de atendimento vazia!" << std::endl;
+        std::cout << "\nFila de atendimento vazia!" << std::endl;
         return;
     }
 
-    Chamado chamado = filaAtendimento.desenfileirar();
-    std::cout << "Atendendo chamado ID: " << chamado.getId() << std::endl;
-    std::cout << "Solicitante: " << chamado.getSolicitante() << std::endl;
+    Chamado* chamado = filaAtendimento.desenfileirar();
+    std::cout << "\n-----------------------------------------\n";
+    std::cout << " ATENDENDO PROXIMO CHAMADO: #" << chamado->getId() << "\n";
+    std::cout << " Solicitante: " << chamado->getSolicitante() << "\n";
+    std::cout << "-----------------------------------------\n";
 }
 
 void SistemaSuporte::consultarHistorico() {
     int id;
-    std::cout << "ID do chamado: ";
+    std::cout << "\nID do chamado para historico: ";
     std::cin >> id;
 
-    Chamado chamado = arvoreChamados.buscar(id);
-    if (chamado.getId() != -1) {
-        std::cout << "\nChamado " << chamado.getId() << "\n" << std::endl;
-        chamado.atualizarStatus(chamado.getStatus(), "Consulta realizada");
+    Chamado* chamado = arvoreChamados.buscar(id);
+    if (chamado != nullptr) {
+        std::cout << "\nChamado " << chamado->getId() << "\n\n";
+        chamado->getHistorico().exibirHistorico();
         std::cout << std::endl;
     } else {
-        std::cout << "Chamado nao encontrado!" << std::endl;
+        std::cout << "\nChamado nao encontrado!" << std::endl;
     }
 }
 
 void SistemaSuporte::alterarStatus() {
-    int id, status;
-    std::cout << "ID do chamado: ";
+    int id;
+    std::cout << "\nID do chamado: ";
     std::cin >> id;
 
-    Chamado chamado = arvoreChamados.buscar(id);
-    if (chamado.getId() != -1) {
-        std::cout << "Novo status (1-ABERTO, 2-EM_ATENDIMENTO, 3-RESOLVIDO, 4-CANCELADO): ";
-        std::cin >> status;
-        std::cin.ignore();
+    Chamado* chamado = arvoreChamados.buscar(id);
+    if (chamado == nullptr) {
+        std::cout << "\nChamado nao encontrado!" << std::endl;
+        return;
+    }
 
-        std::string observacao;
-        std::cout << "Observacao: ";
-        std::getline(std::cin, observacao);
+    int status = lerInteiro("Novo status (1-ABERTO, 2-EM_ATENDIMENTO, 3-RESOLVIDO, 4-CANCELADO): ", 1, 4);
+    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 
-        chamado.atualizarStatus(static_cast<Status>(status - 1), observacao);
-        std::cout << "Status alterado com sucesso!" << std::endl;
+    std::string observacao;
+    std::cout << "Observacao: ";
+    std::getline(std::cin, observacao);
+
+    if (arvoreChamados.atualizarStatus(id, static_cast<Status>(status - 1), observacao)) {
+        std::cout << "\nStatus alterado com sucesso!" << std::endl;
     } else {
-        std::cout << "Chamado nao encontrado!" << std::endl;
+        std::cout << "\nErro ao alterar status!" << std::endl;
     }
 }
 
@@ -146,23 +200,63 @@ void SistemaSuporte::exibirEstatisticas() {
     int abertos = 0, emAtendimento = 0, resolvidos = 0, cancelados = 0;
     arvoreChamados.obterContagemStatus(abertos, emAtendimento, resolvidos, cancelados);
 
-    std::cout << "\n========= ESTATISTICAS =========" << std::endl;
-    std::cout << "\nTotal de chamados: " << arvoreChamados.getQuantidadeTotal() << std::endl;
+    std::cout << "\n----------- ESTATISTICAS ------------\n\n";
+    std::cout << "Total de chamados: " << arvoreChamados.getQuantidadeTotal() << "\n\n";
 
-    Chamado menor = arvoreChamados.buscarMenorID();
-    if (menor.getId() != -1) {
-        std::cout << "\nMenor ID: " << menor.getId() << std::endl;
-    }
-    Chamado maior = arvoreChamados.buscarMaiorID();
-    if (maior.getId() != -1) {
-        std::cout << "Maior ID: " << maior.getId() << std::endl;
+    Chamado* menor = arvoreChamados.buscarMenorID();
+    if (menor != nullptr) {
+        std::cout << "Menor ID: " << menor->getId() << "\n";
+    } else {
+        std::cout << "Menor ID: N/A\n";
     }
 
-    std::cout << "Altura da BST: " << arvoreChamados.getAltura() << std::endl;
-    std::cout << "Chamados na fila: " << filaAtendimento.getTamanho() << std::endl;
+    Chamado* maior = arvoreChamados.buscarMaiorID();
+    if (maior != nullptr) {
+        std::cout << "Maior ID: " << maior->getId() << "\n\n";
+    } else {
+        std::cout << "Maior ID: N/A\n\n";
+    }
 
-    std::cout << "Chamados abertos: " << abertos << std::endl;
-    std::cout << "Em atendimento: " << emAtendimento << std::endl;
-    std::cout << "Resolvidos: " << resolvidos << std::endl;
-    std::cout << "Cancelados: " << cancelados << "\n" << std::endl;
+    std::cout << "Altura da BST: " << arvoreChamados.getAltura() << "\n\n";
+    std::cout << "Chamados na fila: " << filaAtendimento.getTamanho() << "\n\n";
+
+    std::cout << "Chamados abertos: " << abertos << "\n";
+    std::cout << "Em atendimento: " << emAtendimento << "\n";
+    std::cout << "Resolvidos: " << resolvidos << "\n";
+    std::cout << "Cancelados: " << cancelados << "\n";
+    std::cout << "\n-------------------------------------\n";
+}
+
+void SistemaSuporte::preOrdem() {
+    std::cout << "\n=== PERCURSO PRE-ORDEM ===" << std::endl;
+    arvoreChamados.percursoPreOrdem();
+}
+
+void SistemaSuporte::posOrdem() {
+    std::cout << "\n=== PERCURSO POS-ORDEM ===" << std::endl;
+    arvoreChamados.percursoPosOrdem();
+}
+
+void SistemaSuporte::emLargura() {
+    std::cout << "\n=== PERCURSO EM LARGURA ===" << std::endl;
+    arvoreChamados.percursoEmLargura();
+}
+
+void SistemaSuporte::consultarFrenteFila() {
+    Chamado* chamado = filaAtendimento.espiarFrente();
+
+    if (chamado == nullptr) {
+        std::cout << "\nFila de atendimento vazia!" << std::endl;
+        return;
+    }
+
+    std::cout << "\n+---------------------------------------+\n";
+    std::cout << "  PRIMEIRO DA FILA (nao retirado)\n";
+    std::cout << "+---------------------------------------+\n";
+    std::cout << "  Chamado #" << chamado->getId() << "\n";
+    std::cout << "  Solicitante : " << chamado->getSolicitante() << "\n";
+    std::cout << "  Descricao   : " << chamado->getDescricao() << "\n";
+    std::cout << "  Status      : " << Chamado::statusToString(chamado->getStatus()) << "\n";
+    std::cout << "+---------------------------------------+\n";
+    std::cout << "\nChamados restantes na fila: " << filaAtendimento.getTamanho() << std::endl;
 }
