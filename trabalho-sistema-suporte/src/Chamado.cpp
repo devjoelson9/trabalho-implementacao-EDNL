@@ -11,7 +11,28 @@ Chamado::~Chamado() {}
 
 void Chamado::atualizarStatus(const Status& novoStatus, const std::string& observacao) {
     status = novoStatus;
-    historico.adicionarEvento(observacao);
+
+    if (observacao.empty()) {
+        historico.adicionarEvento(textoPadrao(novoStatus));
+    } else {
+        historico.adicionarEvento(observacao);
+    }
+
+    if (novoStatus == Status::RESOLVIDO) {
+        historico.adicionarEvento("Chamado encerrado como RESOLVIDO");
+    } else if (novoStatus == Status::CANCELADO) {
+        historico.adicionarEvento("Cancelado pelo suporte");
+    }
+}
+
+std::string Chamado::textoPadrao(Status stat) {
+    switch (stat) {
+        case Status::ABERTO: return "Chamado reaberto";
+        case Status::EM_ATENDIMENTO: return "Atendimento iniciado";
+        case Status::RESOLVIDO: return "Problema resolvido";
+        case Status::CANCELADO: return "Cancelamento solicitado";
+        default: return "Status alterado";
+    }
 }
 
 void Chamado::registrarEvento(const std::string& descricao) {

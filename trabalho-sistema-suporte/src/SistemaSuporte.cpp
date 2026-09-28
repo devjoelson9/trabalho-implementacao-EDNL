@@ -151,8 +151,7 @@ void SistemaSuporte::atenderProximo() {
     }
 
     Chamado* chamado = filaAtendimento.desenfileirar();
-    chamado->registrarEvento("Atendimento iniciado pelo suporte");
-    arvoreChamados.atualizarStatus(chamado->getId(), Status::EM_ATENDIMENTO, "Status alterado para EM_ATENDIMENTO");
+    arvoreChamados.atualizarStatus(chamado->getId(), Status::EM_ATENDIMENTO, "");
 
     std::cout << "\n-----------------------------------------\n";
     std::cout << " ATENDENDO PROXIMO CHAMADO: #" << chamado->getId() << "\n";

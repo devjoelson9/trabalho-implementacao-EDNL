@@ -53,5 +53,6 @@ class Chamado {
         static std::string statusToString(Status stat);
         static std::string categoriaToString(Categoria cat);
         static std::string prioridadeToString(Prioridade pri);
+        static std::string textoPadrao(Status stat);
     };
 #endif
