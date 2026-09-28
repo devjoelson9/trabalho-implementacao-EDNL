@@ -47,5 +47,10 @@ class Chamado {
         Categoria getCategoria() const;
         Prioridade getPrioridade() const;
         Status getStatus() const;
+        ListaHistorico& getHistorico();
+
+        static std::string statusToString(Status stat);
+        static std::string categoriaToString(Categoria cat);
+        static std::string prioridadeToString(Prioridade pri);
     };
 #endif
