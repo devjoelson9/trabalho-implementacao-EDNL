@@ -9,10 +9,12 @@ class ListaHistorico{
         EventoHistorico* inicio;
     public:
         ListaHistorico();
+        ListaHistorico(const ListaHistorico& other);
+        ListaHistorico& operator=(const ListaHistorico& other);
         ~ListaHistorico();
 
-        void adicionarEvento(const std::string& dataHorario, const std::string& descricao);
-        void exibirHistorico();
+        void adicionarEvento(const std::string& descricao);
+        void exibirHistorico() const;
 };
 
 #endif
