@@ -40,6 +40,7 @@ class Chamado {
         ~Chamado();
 
         void atualizarStatus(const Status& novoStatus, const std::string& observacao);
+        void registrarEvento(const std::string& descricao);
 
         int getId() const;
         std::string getSolicitante() const;

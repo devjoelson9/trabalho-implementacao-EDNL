@@ -14,6 +14,10 @@ void Chamado::atualizarStatus(const Status& novoStatus, const std::string& obser
     historico.adicionarEvento(observacao);
 }
 
+void Chamado::registrarEvento(const std::string& descricao) {
+    historico.adicionarEvento(descricao);
+}
+
 int Chamado::getId() const {
     return id;
 }
