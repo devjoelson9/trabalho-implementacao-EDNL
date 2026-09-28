@@ -14,6 +14,7 @@ class NoBST{
         ~NoBST();
 
         Chamado getChamado() const;
+        Chamado& getChamado();
         NoBST* getEsquerdo() const;
         NoBST* getDireito() const;
         NoBST* getPai() const;

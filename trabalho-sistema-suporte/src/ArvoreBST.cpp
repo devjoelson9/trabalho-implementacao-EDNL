@@ -4,7 +4,9 @@
 
 NoBST* ArvoreBST::inserirRec(NoBST* no, Chamado chamado) {
     if (no == nullptr) {
-        return new NoBST(chamado);
+        NoBST* novo = new NoBST(chamado);
+        novo->setPai(nullptr);
+        return novo;
     }
     if (chamado.getId() < no->getChamado().getId()) {
         no->setEsquerdo(inserirRec(no->getEsquerdo(), chamado));
@@ -23,19 +25,34 @@ NoBST* ArvoreBST::removerRec(NoBST* no, int id) {
         no->setDireito(removerRec(no->getDireito(), id));
     } else {
         if (no->getEsquerdo() == nullptr) {
-            NoBST* temp = no->getDireito();
-            delete no;
-            return temp;
+            return transplant(no, no->getDireito());
         } else if (no->getDireito() == nullptr) {
-            NoBST* temp = no->getEsquerdo();
-            delete no;
-            return temp;
+            return transplant(no, no->getEsquerdo());
         }
-        NoBST* temp = menorNo(no->getDireito());
-        no->setChamado(temp->getChamado());
-        no->setDireito(removerRec(no->getDireito(), temp->getChamado().getId()));
+        NoBST* sucessor = menorNo(no->getDireito());
+        no->setChamado(sucessor->getChamado());
+        no->setDireito(removerRec(no->getDireito(), sucessor->getChamado().getId()));
     }
     return no;
+}
+
+NoBST* ArvoreBST::transplant(NoBST* alvo, NoBST* substituto) {
+    NoBST* pai = alvo->getPai();
+
+    if (pai == nullptr) {
+        raiz = substituto;
+    } else if (pai->getEsquerdo() == alvo) {
+        pai->setEsquerdo(substituto);
+    } else {
+        pai->setDireito(substituto);
+    }
+
+    if (substituto != nullptr) {
+        substituto->setPai(pai);
+    }
+
+    delete alvo;
+    return substituto;
 }
 
 NoBST* ArvoreBST::buscarRec(NoBST* no, int id) {
@@ -59,14 +76,14 @@ NoBST* ArvoreBST::menorNo(NoBST* no) {
 void ArvoreBST::emOrdemRec(NoBST* no) {
     if (no != nullptr) {
         emOrdemRec(no->getEsquerdo());
-        std::cout << "ID: " << no->getChamado().getId() << std::endl;
+        std::cout << no->getChamado().getId() << std::endl;
         emOrdemRec(no->getDireito());
     }
 }
 
 void ArvoreBST::preOrdemRec(NoBST* no) {
     if (no != nullptr) {
-        std::cout << "ID: " << no->getChamado().getId() << std::endl;
+        std::cout << no->getChamado().getId() << std::endl;
         preOrdemRec(no->getEsquerdo());
         preOrdemRec(no->getDireito());
     }
@@ -76,7 +93,7 @@ void ArvoreBST::posOrdemRec(NoBST* no) {
     if (no != nullptr) {
         posOrdemRec(no->getEsquerdo());
         posOrdemRec(no->getDireito());
-        std::cout << "ID: " << no->getChamado().getId() << std::endl;
+        std::cout << no->getChamado().getId() << std::endl;
     }
 }
 
@@ -98,7 +115,7 @@ void ArvoreBST::listarIntervaloRec(NoBST* no, int idInicio, int idFim) {
         listarIntervaloRec(no->getEsquerdo(), idInicio, idFim);
     }
     if (no->getChamado().getId() >= idInicio && no->getChamado().getId() <= idFim) {
-        std::cout << "ID: " << no->getChamado().getId() << std::endl;
+        std::cout << no->getChamado().getId() << std::endl;
     }
     if (no->getChamado().getId() < idFim) {
         listarIntervaloRec(no->getDireito(), idInicio, idFim);
@@ -119,7 +136,16 @@ void ArvoreBST::contarStatusRecursivo(NoBST* no, int& abertos, int& emAtendiment
 
 ArvoreBST::ArvoreBST() : raiz(nullptr) {}
 
-ArvoreBST::~ArvoreBST() {}
+ArvoreBST::~ArvoreBST() {
+    liberarRec(raiz);
+    raiz = nullptr;
+}
+void ArvoreBST::liberarRec(NoBST* no) {
+    if (no == nullptr) return;
+    liberarRec(no->getEsquerdo());
+    liberarRec(no->getDireito());
+    delete no;
+}
 
 bool ArvoreBST::inserir(Chamado chamado) {
     if (buscarRec(raiz, chamado.getId()) != nullptr) {
@@ -129,12 +155,12 @@ bool ArvoreBST::inserir(Chamado chamado) {
     return true;
 }
 
-Chamado ArvoreBST::buscar(int id) {
+Chamado* ArvoreBST::buscar(int id) {
     NoBST* no = buscarRec(raiz, id);
     if (no != nullptr) {
-        return no->getChamado();
+        return &(no->getChamado());
     }
-    return Chamado(-1, "", "", Categoria::HARDWARE, Prioridade::BAIXA);
+    return nullptr;
 }
 
 bool ArvoreBST::remover(int id) {
@@ -145,27 +171,36 @@ bool ArvoreBST::remover(int id) {
     return true;
 }
 
+bool ArvoreBST::atualizarStatus(int id, Status novoStatus, const std::string& observacao) {
+    NoBST* no = buscarRec(raiz, id);
+    if (no == nullptr) {
+        return false;
+    }
+    no->getChamado().atualizarStatus(novoStatus, observacao);
+    return true;
+}
+
 void ArvoreBST::listarEmOrdem() {
     emOrdemRec(raiz);
 }
 
-Chamado ArvoreBST::buscarMenorID() {
+Chamado* ArvoreBST::buscarMenorID() {
     NoBST* no = menorNo(raiz);
     if (no != nullptr) {
-        return no->getChamado();
+        return &(no->getChamado());
     }
-    return Chamado(-1, "", "", Categoria::HARDWARE, Prioridade::BAIXA);
+    return nullptr;
 }
 
-Chamado ArvoreBST::buscarMaiorID() {
+Chamado* ArvoreBST::buscarMaiorID() {
     NoBST* no = raiz;
     if (no == nullptr) {
-        return Chamado(-1, "", "", Categoria::HARDWARE, Prioridade::BAIXA);
+        return nullptr;
     }
     while (no->getDireito() != nullptr) {
         no = no->getDireito();
     }
-    return no->getChamado();
+    return &(no->getChamado());
 }
 
 int ArvoreBST::getAltura() {
@@ -198,7 +233,7 @@ void ArvoreBST::percursoEmLargura() {
         NoBST* no = fila.front();
         fila.pop();
 
-        std::cout << "ID: " << no->getChamado().getId() << std::endl;
+        std::cout << no->getChamado().getId() << std::endl;
 
         if (no->getEsquerdo() != nullptr) {
             fila.push(no->getEsquerdo());
@@ -212,4 +247,8 @@ void ArvoreBST::percursoEmLargura() {
 void ArvoreBST::obterContagemStatus(int& abertos, int& emAtendimento, int& resolvidos, int& cancelados) {
     abertos = emAtendimento = resolvidos = cancelados = 0;
     contarStatusRecursivo(raiz, abertos, emAtendimento, resolvidos, cancelados);
+}
+
+NoBST* ArvoreBST::getRaiz() const {
+    return raiz;
 }

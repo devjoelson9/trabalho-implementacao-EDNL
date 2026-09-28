@@ -9,6 +9,10 @@ Chamado NoBST::getChamado() const {
     return chamado;
 }
 
+Chamado& NoBST::getChamado() {
+    return chamado;
+}
+
 NoBST* NoBST::getEsquerdo() const {
     return esquerdo;
 }
@@ -23,10 +27,16 @@ NoBST* NoBST::getPai() const {
 
 void NoBST::setEsquerdo(NoBST* esquerdo) {
     this->esquerdo = esquerdo;
+    if (esquerdo != nullptr) {
+        esquerdo->setPai(this);
+    }
 }
 
 void NoBST::setDireito(NoBST* direito) {
     this->direito = direito;
+    if (direito != nullptr) {
+        direito->setPai(this);
+    }
 }
 
 void NoBST::setPai(NoBST* pai) {

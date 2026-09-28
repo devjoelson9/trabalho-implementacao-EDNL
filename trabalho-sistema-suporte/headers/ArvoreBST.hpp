@@ -10,6 +10,7 @@ class ArvoreBST{
 
         NoBST* inserirRec(NoBST* no, Chamado chamado);
         NoBST* removerRec(NoBST* no, int id);
+        NoBST* transplant(NoBST* alvo, NoBST* substituto);
         NoBST* buscarRec(NoBST* no, int id);
         NoBST* menorNo(NoBST* no);
         void emOrdemRec(NoBST* no);
@@ -19,17 +20,19 @@ class ArvoreBST{
         int contarRec(NoBST* no);
         void listarIntervaloRec(NoBST* no, int idInicio, int idFim);
         void contarStatusRecursivo(NoBST* no, int& abertos, int& emAtendimento, int& resolvidos, int& cancelados);
+        void liberarRec(NoBST* no);
 
     public:
         ArvoreBST();
         ~ArvoreBST();
 
         bool inserir(Chamado chamado);
-        Chamado buscar(int id);
+        Chamado* buscar(int id);
         bool remover(int id);
+        bool atualizarStatus(int id, Status novoStatus, const std::string& observacao);
         void listarEmOrdem();
-        Chamado buscarMenorID();
-        Chamado buscarMaiorID();
+        Chamado* buscarMenorID();
+        Chamado* buscarMaiorID();
         int getAltura();
         int getQuantidadeTotal();
         void listarPorIntervalo(int idInicio, int idFim);
@@ -37,6 +40,7 @@ class ArvoreBST{
         void percursoPosOrdem();
         void percursoEmLargura();
         void obterContagemStatus(int& abertos, int& emAtendimento, int& resolvidos, int& cancelados);
+        NoBST* getRaiz() const;
 };
 
 #endif
